@@ -1,27 +1,51 @@
 import './index.scss';
 import React from 'react';
+import Game from './Game';
+import Result from './Result';
+
+const questions = [
+  {
+    title: 'React - это ... ?',
+    variants: ['библиотека', 'фреймворк', 'приложение'],
+    correct: 0,
+  },
+  {
+    title: 'Компонент - это ... ',
+    variants: ['приложение', 'часть приложения или страницы', 'то, что я не знаю что такое'],
+    correct: 1,
+  },
+  {
+    title: 'Что такое JSX?',
+    variants: [
+      'Это простой HTML',
+      'Это функция',
+      'Это тот же HTML, но с возможностью выполнять JS-код',
+    ],
+    correct: 2,
+  },
+];
+
+
+
+
 
 function App() {
-  const [count, setCount] = React.useState(0);
 
-  const onClickMinus = () => {
-    if(count > 0) {
-      setCount(count-1);
-    }
-  }
+  const [step, setStep] = React.useState(0);
+  const [correct, setCorrect] = React.useState(0);
+  const question = questions[step];
 
-  const onClickPlus = () => {
-    setCount(count+1);
+  const changeStep = (index) => {
+   setStep(step + 1);
+
+   if(question.correct == index) {
+    setCorrect(correct + 1);
+   }
   }
 
   return (
     <div className="App">
-      <div>
-        <h2>Счетчик:</h2>
-        <h1>{count}</h1>
-        <button className="minus" onClick={onClickMinus}>- Минус</button>
-        <button className="plus" onClick={onClickPlus}>Плюс +</button>
-      </div>
+      {step !== questions.length ? <Game step={step} question={question} changeStep={changeStep} questions={questions}/> : <Result correct={correct} questions={questions}/> }
     </div>
   );
 }
