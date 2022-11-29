@@ -1,61 +1,57 @@
-import React, { useEffect } from 'react';
+import React from 'react';
+import { Block } from './Block';
 import './index.scss';
-import { Success } from './components/Success';
-import { Users } from './components/Users';
-
-// Тут список пользователей: https://reqres.in/api/users
 
 function App() {
+  const [valute, setValute] = React.useState(1);
+  const [fromCurrency, setFromCurrency] = React.useState('RUB');
+  const [toCurrency, setToCurrency] = React.useState('USD');
+  const [fromPrice, setFromPrice] = React.useState(0);
+  const [toPrice, setToPrice] = React.useState(0);
 
-  const [users, setUsers] = React.useState([]);
-  const [invites, setInvites] = React.useState([]);
-  const [isLoading, setLoading] = React.useState(true);
-  const [searchValue, setSearchValue] = React.useState('');
-  const [success, setSuccess] = React.useState(false);
 
   React.useEffect(() => {
-    fetch('https://reqres.in/api/users')
-    .then((res) => res.json())
+    fetch('https://www.cbr-xml-daily.ru/daily_json.js')
+    .then(res => res.json())
     .then((json) => {
-      setUsers(json.data);
+      json["Valute"]["RUB"] = {};
+      json["Valute"]["RUB"]["Value"] = 1;
+      setValute(json.Valute);
     })
     .catch((err) => {
       console.warn(err);
-      alert('Ошибка при получении пользователей!');
+      alert('Не удалось получить данные!');
     })
-    .finally(() => setLoading(false));
   }, [])
 
-  const onChangeSearchValue = (event) => {
-    setSearchValue(event.target.value);
+  const onChangeFromPrice = (value) => {
+
+    const result = (valute[fromCurrency]["Value"]/valute[toCurrency]["Value"] * value).toFixed(3);
+    setToPrice(result);
+    setFromPrice(value);
   }
 
-  const onClickInvite = (id) => {
-    if(invites.includes(id)) {
-      setInvites(prev => prev.filter(_id => _id !== id));
-    } else {
-      setInvites(prev => [...prev, id]);
-    }
+  const onChangeToPrice = (value) => {
+
+    const result = valute[toCurrency]["Value"]/valute[fromCurrency]["Value"] * value;
+    setFromPrice(result);
+    setToPrice(value);
   }
 
-  const onClickSendInvites = () => {
-    setSuccess(true);
+  const onChangeFromCurrency = (cur) => {
+    setFromCurrency(cur);
+    onChangeFromPrice(fromPrice);
   }
 
+  const onChangeToCurrency = (cur) => {
+    setToCurrency(cur);
+    onChangeToPrice(toPrice);
+  }
 
   return (
     <div className="App">
-      {success ? (<Success count={invites.length}/>) : (
-        <Users
-        items={users}
-        isLoading={isLoading}
-        searchValue={searchValue}
-        onChangeSearchValue={onChangeSearchValue}
-        invites={invites}
-        onClickInvite={onClickInvite}
-        onClickSendInvites={onClickSendInvites}
-        />
-      )}
+      <Block value={fromPrice} currency={fromCurrency} onChangeCurrency={onChangeFromCurrency} onChangeValue={onChangeFromPrice}/>
+      <Block value={toPrice} currency={toCurrency} onChangeCurrency={onChangeToCurrency} onChangeValue={onChangeToPrice}/>
     </div>
   );
 }
